@@ -15,8 +15,6 @@ services:
   - docker
 
 script: sbt ++$TRAVIS_SCALA_VERSION test:compile &&
-    sbt ++$TRAVIS_SCALA_VERSION specialk/test &&
-    sbt ++$TRAVIS_SCALA_VERSION agentService/test &&
     sbt ++$TRAVIS_SCALA_VERSION "gloseval/run gencert --self-signed" &&
     sbt ++$TRAVIS_SCALA_VERSION gloseval/docker:publishLocal 
 
@@ -32,7 +30,8 @@ before_cache:
 after_success:
   - if [ "$TRAVIS_BRANCH" == "travis-ci" ]; then
     docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-    docker push sgov74/synereo;
+    docker tag synereo/base:latest sgov74/synereo:travis-$TRAVIS_BUILD_NUMBER;
+    docker push sgov74/synereo:travis-$TRAVIS_BUILD_NUMBER;
     fi
 
 notifications:
