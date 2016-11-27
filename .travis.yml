@@ -12,12 +12,14 @@ services:
   - mongodb
   - rabbitmq
   - memcached
+  - docker
 
 script: sbt ++$TRAVIS_SCALA_VERSION test:compile &&
     sbt ++$TRAVIS_SCALA_VERSION specialk/test &&
     sbt ++$TRAVIS_SCALA_VERSION agentService/test &&
     sbt ++$TRAVIS_SCALA_VERSION "gloseval/run gencert --self-signed" &&
     sbt ++$TRAVIS_SCALA_VERSION gloseval/test
+    sbt ++$TRAVIS_SCALA_VERSION gloseval/docker:publishLocal 
 
 cache:
   directories:
@@ -27,6 +29,12 @@ cache:
 before_cache:
   - find $HOME/.ivy2/cache -name "ivydata-*.properties" -type f -delete
   - find $HOME/.sbt -name "*.lock" -type f -delete
+
+after_success:
+  - if [ "$TRAVIS_BRANCH" == "travis-ci" ]; then
+    docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+    docker push sgov74/synereo;
+    fi
 
 notifications:
   webhooks:
